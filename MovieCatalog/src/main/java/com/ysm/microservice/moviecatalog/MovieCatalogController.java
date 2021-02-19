@@ -15,8 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import lombok.extern.slf4j.Slf4j;
+
 
 @RestController
+@Slf4j
 @RequestMapping("/catalog/")
 public class MovieCatalogController {
 
@@ -27,12 +30,15 @@ public class MovieCatalogController {
 	@GetMapping("{userId}")
 	public List<CatalogItem> getCatalog(@PathVariable("userId") String userId)
 	{
+		log.info("Movie Catalog Microservice start and calling others");
 		UserRating ratings=template.getForObject("http://rating-service/ratings/users/"+userId, UserRating.class);
 		List<CatalogItem> catalog=ratings.getUserRatings().stream().map((r) -> {
 			Movie movie=template.getForObject("http://movie-info-service/movies/"+r.getMovieId(), Movie.class);
 			return 	new CatalogItem(movie.getMovieName(), "Desc", r.getRating());
 		
 		}).collect(Collectors.toList());
+		
+		log.info("Movie Catalog Microservice end ");
 		
 		return catalog;
 		
