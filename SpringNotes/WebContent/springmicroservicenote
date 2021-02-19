@@ -1,0 +1,248 @@
+
+
+Spring Cloud / Boot Abstraction   use this tech 
+
+Eureka 
+Ribboin 
+Hysterix
+Zuul
+
+
+
+Service Discovery Pattern : 
+
+implementation : Eureka
+1> Create Eureka Server 
+
+2> Individual Microservice will be Eureka Client
+Stpes : 
+1 Start up a Eureka server 
+2 have microservice register 
+3 communicate with Eureka 
+
+==================Inside Eureka Server----------------------------------
+server.port=8761
+eureka.client.register-with-eureka=false  dont act like client 
+eureka.client.fetch-registry=false    dont look for other servers 
+
+===================Inside Eureka Client-----------------------------------
+add Eureka client pom 
+looks for default poort 
+change spring application name 
+@@LoadBalanced at Rest Template Bean de ==>  restTemplate gonna looks for hint in Service Discovery
+Eureka CLient doest call the ES all the time , it uses cached
+========================================================
+
+Eureka Does client side load balancing : 
+when there two ore more instances of same service , which instance to be called it will be called by Eureka Server 
+class DiscoveryClient  --> contains more info about service  and if you want to progammatically call service u can use this 
+==================================How fault tolerance works  // ( Fall back    service / server goes down)
+
+what if a service is not available ? even it was register with Eureka Server ? it will be problem ?
+solution : 
+	Send Heart Beats to service registery 
+	
+what if discovery server goes down?
+Soln: picks up from Client cache. 
+
+
+
+
+===============================================================================================
+Microservices Level 2 : 
+Fault Tolerance and resilience ; 
+what is FT & R?
+What tolerance ur system going to have in terms of level , if service goes down will the whole system going to down ? or few feature ?
+is called FT 
+
+What is Resilience (ability to recover)?
+How many faults systems can tolerate before it break downs 
+system try to recover itself 
+
+
+==================Problems with Microservices:
+Scenario : a microservice instance goes down 
+	Soln : Run multiple instances 
+	
+Scenario  : a micro service instance is slow 
+	 Ripple effect, 
+	   Threads ? how threads work in web server ?
+	        Web server : when request comes a new thread is created  and  response comes and thread deleted 
+	        but if there is delay in response then thread is still alive 
+	         
+	Soln : 
+		1st TimeOuts	, We can set the timeouts on Spring RestTemplate 
+						 : this will solve half cause for 3 seconds thread is still der
+						 
+		2nd Circuit Breaker  : if multiple timeout occurs then caller should be 
+							   smarter to detect the slower services and not send the request to them 
+							   and after period of time , try to call and if still occurs then stop making request and deactivate
+			if one ms calls two or more then in that case you should c.b. 
+			
+=============Circuit Breaker
+what are the parameters to Circuit to break?
+1> Last N Request to consider fo decisions 
+2> How many of those should fail ? 
+3> Timeout duration 
+
+When does the Circuit to go back to normal ?
+1> When can service calls after long ? sleep window
+what if circuit tripped and no request is going to the damanged service but what now ?
+	We need to have a fallback 
+		-> Throw as error
+		->return a fallback "default" response 
+		-> cache previous response and use that when possible
+
+							   
+	
+why CB ? 
+-failing fast 
+-Fallback Functionality
+Automatic Recovery  due to sleep timeout 
+
+Hystrix Framework -- CB----------------------------------------------> 	
+ what is Hystrix ?
+ 	It implement CB 
+ 	Programmer has config the parameters
+	
+	How to add Hystrix to App?
+		add to pom 
+		add @EnableCircuitBreaker to application class
+		identify the method that need CB and annotate @HystricCommand
+		Configure Hystric behavior command 
+		
+	
+==========================================================
+Bulkhead pattern : 
+	
+	prevents failure from cascade ... 
+	portion of the ship --> will get all the water 
+	threadpool key
+	
+===================================================================
+Microservice Configuration Spring Boot -0----------------------------------------------------
+	
+Configuration values seprated out of the code 
+-->Database Connections 
+-->Credentials 
+-->Feature Flags 
+-->Business logic condif parameters
+-->Scenario Testing
+-->Spring boot config
+
+Push config to prod without code deployment
+
+Types of Config file 
+-->Xml files
+-->JSON files
+-->YAML files
+-->.properties files
+	
+	
+	
+Config should be Externalized   ---> using app prop , command based, yaml , 
+Environment Specific  ---> Profiling
+consistent
+Version history--> GIT 
+Real Time management --- 
+==========================================
+How to Externalized ?
+
+you can put the properties in application.properties file and use @Value("${key}")	
+
+We can override the value of application.properties ?
+We can change or override it by 
+
+1>provide external application.propeties file while running the jar file
+2>command line argument   and mix match 
+
+	
+=====================
+@Value annotation tricks you should know 	
+	this annotation to get value from config 
+	
+Three trick
+1> you can list as well
+2> default value 
+3> you can get Json in Map directly	
+	
+=============================
+@ConfigurationProperties annotation to pull prop from prop file 
+if you want to map properties to class directly rather than individual
+
+	
+	
+	
+===========================Spring actuator  configprops
+
+r --management.endpoints.web.exposure.include=*
+
+==================================	
+	Using YAML Files
+	
+	Readablitiy 
+	
+	
+===========================
+Spring Profiles-=========================
+If you want  env specific values then You can use profile	
+
+	
+	test-q1  ------->overrides prop present in test-q1
+		test  --------------------->overrides properties present in  test
+			default    ----------> Put the common things here 
+	
+	
+	
+You can override active profile in command line 
+
+You can select beans by profile 
+=-=========================	
+	
+Spring Configuration   using Spring Config Server 
+
+Consistency in confi 
+Important with microservices ;;;;;;---------->
+
+Config as Service ------------------------------>
+All THe microservice will get config from Config Service
+
+Config as Microservice : -=-=-=-=-=-=-=-=-=-=-=>
+
+Options for Config Server 
+Apache Zookeeper / Consul / Spring Cloud Config Server
+
+
+Spring Cloud Config Server SCCS: 
+We want to change without built and with versioning 
+SCCS --> can connect to external data source like GIT 
+
+upload the config to git 
+connect your SCCS to git 
+change ur file and commit to git 
+SCCS will do the magic
+	
+	
+	
+=======================================	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	 
+
+
+
+

@@ -1,0 +1,7 @@
+my.greeting: HelloWorldlocal
+spring:
+  cloud:
+    config:
+      url: http://localhost:8888
+management.endpoints.web.exposure.include: "*"
+debug: true
